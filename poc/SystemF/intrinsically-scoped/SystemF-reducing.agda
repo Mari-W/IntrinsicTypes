@@ -311,7 +311,6 @@ progress (⊢∙ {t = t} ⊢e _ _) with progress ⊢e
 ⊢[] ⊢t _ (here refl) _ refl = ⊢t
 ⊢[] ⊢t _ (there x)   _ refl = ⊢` refl
 
-
 subject-reduction : 
   Γ ⊢ e ∶ t → 
   e ↪ e' → 
