@@ -155,52 +155,6 @@ distributivityₛₛ _ _ _ = fun-ext (λ _ → fun-ext λ { (here refl) → ≫�
 
 {-# REWRITE distributivityᵣᵣ distributivityᵣₛ distributivityₛᵣ distributivityₛₛ #-}
 
-⋯idᵣ : (T : S ⊢ s) → T ⋯ᵣ idᵣ ≡ T 
-⋯idᵣ (` x)        = refl
-⋯idᵣ (λx e)       = cong λx_ (⋯idᵣ e)
-⋯idᵣ (Λα e)       = cong Λα_ (⋯idᵣ e)
-⋯idᵣ (∀[α∶ k ] t) = cong₂ ∀[α∶_]_ (⋯idᵣ k) (⋯idᵣ t)
-⋯idᵣ (e₁ · e₂)    = cong₂ _·_ (⋯idᵣ e₁) (⋯idᵣ e₂)
-⋯idᵣ (e ∙ t)      = cong₂ _∙_ (⋯idᵣ e) (⋯idᵣ t)
-⋯idᵣ (t₁ ⇒ t₂)    = cong₂ _⇒_ (⋯idᵣ t₁) (⋯idᵣ t₂)
-⋯idᵣ ★            = refl
-
-↑idₛ : _∷ₛ_ {s = s} {S₁ = S} (` here refl) (idₛ ≫ₛᵣ wkᵣ) ≡ idₛ 
-↑idₛ = fun-ext (λ _ → fun-ext λ { (here refl) → refl ; (there x) → refl })
--- not part of the theory, although it should not hurt i guess?
--- would remove the substs in the next lemma, thus easing generating proofs by reflection
---{-# REWRITE ↑idₛ #-}
-
-⋯idₛ : (T : S ⊢ s) → T ⋯ₛ idₛ ≡ T 
-⋯idₛ (` x)        = refl
-⋯idₛ (λx e)       = cong λx_ (subst (λ σ → (e ⋯ₛ σ) ≡ e) (sym ↑idₛ) (⋯idₛ e))
-⋯idₛ (Λα e)       = cong Λα_ (subst (λ σ → (e ⋯ₛ σ) ≡ e) (sym ↑idₛ) (⋯idₛ e))
-⋯idₛ (∀[α∶ k ] t) = cong₂ ∀[α∶_]_ (⋯idₛ k) (subst (λ σ → (t ⋯ₛ σ ) ≡ t) (sym ↑idₛ) (⋯idₛ t))
-⋯idₛ (e₁ · e₂)    = cong₂ _·_ (⋯idₛ e₁) (⋯idₛ e₂)
-⋯idₛ (e ∙ t)      = cong₂ _∙_ (⋯idₛ e) (⋯idₛ t)
-⋯idₛ (t₁ ⇒ t₂)    = cong₂ _⇒_ (⋯idₛ t₁) (⋯idₛ t₂)
-⋯idₛ ★            = refl
-
-{-# REWRITE ⋯idᵣ ⋯idₛ #-}
-
-↑coincidence : {ρ : S₁ ⇛ᵣ S₂} → ((ρ ↑ᵣ s) ≫ᵣₛ idₛ) ≡ (ρ ≫ᵣₛ idₛ) ↑ₛ s
-↑coincidence = fun-ext (λ _ → fun-ext λ { (here refl) → refl ; (there x) → refl })
--- not part of the theory, although it should not hurt i guess?
--- would remove the substs in the next lemma, thus easing generating proofs by reflection
--- {-# REWRITE ↑coincidence #-} 
-
-coincidence : (ρ : S₁ ⇛ᵣ S₂) (T : S₁ ⊢ s) → T ⋯ₛ (ρ ≫ᵣₛ idₛ) ≡ T ⋯ᵣ ρ
-coincidence ρ (` x)        = refl
-coincidence ρ (λx e)       = cong λx_ (subst (λ σ → e ⋯ₛ σ ≡ (e ⋯ᵣ (ρ ↑ᵣ expr))) ↑coincidence (coincidence (ρ ↑ᵣ expr) e))
-coincidence ρ (Λα e)       = cong Λα_ (subst (λ σ → e ⋯ₛ σ ≡ (e ⋯ᵣ (ρ ↑ᵣ type))) ↑coincidence (coincidence (ρ ↑ᵣ type) e))
-coincidence ρ (∀[α∶ k ] t) = cong₂ ∀[α∶_]_ (coincidence ρ k) (subst (λ σ → t ⋯ₛ σ ≡ (t ⋯ᵣ (ρ ↑ᵣ type))) ↑coincidence (coincidence (ρ ↑ᵣ type) t))
-coincidence ρ (e₁ · e₂)    = cong₂ _·_ (coincidence ρ e₁) (coincidence ρ e₂)
-coincidence ρ (e ∙ t)      = cong₂ _∙_ (coincidence ρ e) (coincidence ρ t)
-coincidence ρ (t₁ ⇒ t₂)    = cong₂ _⇒_ (coincidence ρ t₁) (coincidence ρ t₂)
-coincidence ρ ★            = refl
-
-{-# REWRITE coincidence #-}
-
 fusionᵣᵣ : (ρ₁ : S₁ ⇛ᵣ S₂) (ρ₂ : S₂ ⇛ᵣ S₃) (T : S₁ ⊢ s) → (T ⋯ᵣ ρ₁) ⋯ᵣ ρ₂ ≡ T ⋯ᵣ (ρ₁ ≫ᵣᵣ ρ₂)
 fusionᵣᵣ ρ₁ ρ₂ (` x)        = refl
 fusionᵣᵣ ρ₁ ρ₂ (λx e)       = cong λx_ (fusionᵣᵣ (ρ₁ ↑ᵣ expr) (ρ₂ ↑ᵣ expr) e)
@@ -248,6 +202,52 @@ fusionₛₛ σ₁ σ₂ (t₁ ⇒ t₂)    = cong₂ _⇒_ (fusionₛₛ σ₁ 
 fusionₛₛ σ₁ σ₂ ★            = refl
 
 {-# REWRITE fusionₛₛ #-}
+
+⋯idᵣ : (T : S ⊢ s) → T ⋯ᵣ idᵣ ≡ T 
+⋯idᵣ (` x)        = refl
+⋯idᵣ (λx e)       = cong λx_ (⋯idᵣ e)
+⋯idᵣ (Λα e)       = cong Λα_ (⋯idᵣ e)
+⋯idᵣ (∀[α∶ k ] t) = cong₂ ∀[α∶_]_ (⋯idᵣ k) (⋯idᵣ t)
+⋯idᵣ (e₁ · e₂)    = cong₂ _·_ (⋯idᵣ e₁) (⋯idᵣ e₂)
+⋯idᵣ (e ∙ t)      = cong₂ _∙_ (⋯idᵣ e) (⋯idᵣ t)
+⋯idᵣ (t₁ ⇒ t₂)    = cong₂ _⇒_ (⋯idᵣ t₁) (⋯idᵣ t₂)
+⋯idᵣ ★            = refl
+
+↑idₛ : _∷ₛ_ {s = s} {S₁ = S} (` here refl) (idₛ ≫ₛᵣ wkᵣ) ≡ idₛ 
+↑idₛ = fun-ext (λ _ → fun-ext λ { (here refl) → refl ; (there x) → refl })
+-- not part of the theory, although it should not hurt i guess?
+-- would remove the substs in the next lemma, thus easing generating proofs by reflection
+--{-# REWRITE ↑idₛ #-}
+
+⋯idₛ : (T : S ⊢ s) → T ⋯ₛ idₛ ≡ T 
+⋯idₛ (` x)        = refl
+⋯idₛ (λx e)       = cong λx_ (subst (λ σ → (e ⋯ₛ σ) ≡ e) (sym ↑idₛ) (⋯idₛ e))
+⋯idₛ (Λα e)       = cong Λα_ (subst (λ σ → (e ⋯ₛ σ) ≡ e) (sym ↑idₛ) (⋯idₛ e))
+⋯idₛ (∀[α∶ k ] t) = cong₂ ∀[α∶_]_ (⋯idₛ k) (subst (λ σ → (t ⋯ₛ σ ) ≡ t) (sym ↑idₛ) (⋯idₛ t))
+⋯idₛ (e₁ · e₂)    = cong₂ _·_ (⋯idₛ e₁) (⋯idₛ e₂)
+⋯idₛ (e ∙ t)      = cong₂ _∙_ (⋯idₛ e) (⋯idₛ t)
+⋯idₛ (t₁ ⇒ t₂)    = cong₂ _⇒_ (⋯idₛ t₁) (⋯idₛ t₂)
+⋯idₛ ★            = refl
+
+{-# REWRITE ⋯idᵣ ⋯idₛ #-}
+
+↑coincidence : {ρ : S₁ ⇛ᵣ S₂} → ((ρ ↑ᵣ s) ≫ᵣₛ idₛ) ≡ (ρ ≫ᵣₛ idₛ) ↑ₛ s
+↑coincidence = fun-ext (λ _ → fun-ext λ { (here refl) → refl ; (there x) → refl })
+-- not part of the theory, although it should not hurt i guess?
+-- would remove the substs in the next lemma, thus easing generating proofs by reflection
+-- {-# REWRITE ↑coincidence #-} 
+
+coincidence : (ρ : S₁ ⇛ᵣ S₂) (T : S₁ ⊢ s) → T ⋯ₛ (ρ ≫ᵣₛ idₛ) ≡ T ⋯ᵣ ρ
+coincidence ρ (` x)        = refl
+coincidence ρ (λx e)       = cong λx_ (subst (λ σ → e ⋯ₛ σ ≡ (e ⋯ᵣ (ρ ↑ᵣ expr))) ↑coincidence (coincidence (ρ ↑ᵣ expr) e))
+coincidence ρ (Λα e)       = cong Λα_ (subst (λ σ → e ⋯ₛ σ ≡ (e ⋯ᵣ (ρ ↑ᵣ type))) ↑coincidence (coincidence (ρ ↑ᵣ type) e))
+coincidence ρ (∀[α∶ k ] t) = cong₂ ∀[α∶_]_ (coincidence ρ k) (subst (λ σ → t ⋯ₛ σ ≡ (t ⋯ᵣ (ρ ↑ᵣ type))) ↑coincidence (coincidence (ρ ↑ᵣ type) t))
+coincidence ρ (e₁ · e₂)    = cong₂ _·_ (coincidence ρ e₁) (coincidence ρ e₂)
+coincidence ρ (e ∙ t)      = cong₂ _∙_ (coincidence ρ e) (coincidence ρ t)
+coincidence ρ (t₁ ⇒ t₂)    = cong₂ _⇒_ (coincidence ρ t₁) (coincidence ρ t₂)
+coincidence ρ ★            = refl
+
+{-# REWRITE coincidence #-}
 
 variable
   ρ ρ₁ ρ₂ ρ₃ ρ₄ ρ' ρ₁' ρ₂' ρ₃' ρ₄' : S₁ ⇛ᵣ S₂
