@@ -11,13 +11,12 @@ tbd.
     1. Intrinsically scoped, extrinsically typed System F (kinda works)
     2. Intrinsically typed System F (working on this)
 4. Make agda understand that the rewriting system is confluent (will be a pain)
-3. Generalization to Kits: 
-   Unify the handling of renamings and substitutions by using Kits[^Kits]
-   (this might actually not be desirable due to tradoff between additional complexity and code size) 
+3. Generalization to Kits
+   (this might actually not be desirable due to tradeoff between additional complexity and code size) 
 4. Framework:
-    1. Generic universe of syntaxes with biding[^UniverseOfSyntaxesWithBinding]:
+    1. Generic universe of syntaxes with biding[^UniverseOfSyntaxesWithBinding]
        (boring)
-    2. Kitty-like meta framework based on reflection[^Kitty]:
+    2. Kitty-like meta framework based on reflection[^Kitty]
        (cool™)
 
 [^1]: hopefully maybe some day
