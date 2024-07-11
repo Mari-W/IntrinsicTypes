@@ -14,7 +14,7 @@ tbd.
 3. Generalization to Kits
    (this might actually not be desirable due to tradeoff between additional complexity and code size) 
 4. Framework:
-    1. Generic universe of syntaxes with biding[^UniverseOfSyntaxesWithBinding]
+    1. Generic universe of syntaxes with binding[^UniverseOfSyntaxesWithBinding]
        (boring)
     2. Kitty-like meta framework based on reflection[^Kitty]
        (cool™)
