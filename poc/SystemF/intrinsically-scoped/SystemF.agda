@@ -1,5 +1,5 @@
 {-# OPTIONS --rewriting #-}
-module SystemF-reducing where
+module SystemF where
 
 -- Imports ---------------------------------------------------------------------
 
@@ -167,7 +167,9 @@ distributivityₛₛ _ _ _ = fun-ext (λ _ → fun-ext λ { (here refl) → ≫�
 
 ↑idₛ : _∷ₛ_ {s = s} {S₁ = S} (` here refl) (idₛ ≫ₛᵣ wkᵣ) ≡ idₛ 
 ↑idₛ = fun-ext (λ _ → fun-ext λ { (here refl) → refl ; (there x) → refl })
---{-# REWRITE ↑idₛ #-} -- not part of the theory, although it should not hurt i guess?
+-- not part of the theory, although it should not hurt i guess?
+-- would remove the substs in the next lemma, thus easing generating proofs by reflection
+--{-# REWRITE ↑idₛ #-}
 
 ⋯idₛ : (T : S ⊢ s) → T ⋯ₛ idₛ ≡ T 
 ⋯idₛ (` x)        = refl
@@ -183,7 +185,9 @@ distributivityₛₛ _ _ _ = fun-ext (λ _ → fun-ext λ { (here refl) → ≫�
 
 ↑coincidence : {ρ : S₁ ⇛ᵣ S₂} → ((ρ ↑ᵣ s) ≫ᵣₛ idₛ) ≡ (ρ ≫ᵣₛ idₛ) ↑ₛ s
 ↑coincidence = fun-ext (λ _ → fun-ext λ { (here refl) → refl ; (there x) → refl })
--- {-# REWRITE ↑coincidence #-} -- not part of the theory, although it should not hurt i guess?
+-- not part of the theory, although it should not hurt i guess?
+-- would remove the substs in the next lemma, thus easing generating proofs by reflection
+-- {-# REWRITE ↑coincidence #-} 
 
 coincidence : (ρ : S₁ ⇛ᵣ S₂) (T : S₁ ⊢ s) → T ⋯ₛ (ρ ≫ᵣₛ idₛ) ≡ T ⋯ᵣ ρ
 coincidence ρ (` x)        = refl
@@ -373,8 +377,7 @@ progress (⊢∙ {t = t} ⊢e _ _) with progress ⊢e
 
 ⊢↑ᵣ : ρ ∶ Γ₁ ⇛ᵣ Γ₂ → (T : S₁ ∶⊢ s) → (ρ ↑ᵣ s) ∶ Γ₁ ، T ⇛ᵣ (Γ₂ ، (T ⋯ᵣ ρ))
 ⊢↑ᵣ ⊢ρ T _ (here refl) _ refl = refl
-⊢↑ᵣ {ρ = ρ} {Γ₁ = Γ₁} {Γ₂ = Γ₂} ⊢ρ T _ (there x) _ refl = 
-  ⊢wkᵣ Γ₂ (ρ _ x) (wk-drop-∈ x (Γ₁ _ x) ⋯ᵣ ρ) (T ⋯ᵣ ρ) (⊢ρ _ x _ refl)
+⊢↑ᵣ {ρ = ρ} {Γ₁ = Γ₁} {Γ₂ = Γ₂} ⊢ρ T _ (there x) _ refl = ⊢wkᵣ Γ₂ (ρ _ x) (wk-drop-∈ x (Γ₁ _ x) ⋯ᵣ ρ) (T ⋯ᵣ ρ) (⊢ρ _ x _ refl)
 
 ⊢ρ-preserves : ∀ {t : S₁ ⊢ s} {T : S₁ ⊢ (⤊ s)} →
   ρ ∶ Γ₁ ⇛ᵣ Γ₂ →
