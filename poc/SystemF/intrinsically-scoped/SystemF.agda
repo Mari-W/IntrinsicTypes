@@ -45,7 +45,7 @@ data _⊢_ : List Sort → Sort → Set where
 
 variable
   x x₁ x₂ x₃ x₄ x' x₁' x₂' x₃' x₄' : s ∈ S
-  e e₁ e₂ e₃ e₄ e' e₁' e₂Än' e₃' e₄' : S ⊢ expr
+  e e₁ e₂ e₃ e₄ e' e₁' e₂' e₃' e₄' : S ⊢ expr
   t t₁ t₂ t₃ t₄ t' t₁' t₂' t₃' t₄' : S ⊢ type
   k k₁ k₂ k₃ k₄ k' k₁' k₂' k₃' k₄' : S ⊢ kind
 
@@ -103,8 +103,6 @@ abstract
   ≫ᵣₛ-def _ _ _ = refl 
   
 _≫ₛᵣ_ : S₁ ⇛ₛ S₂ → S₂ ⇛ᵣ S₃ → S₁ ⇛ₛ S₃
-_⋯ₛ_ : S₁ ⊢ s → S₁ ⇛ₛ S₂ → S₂ ⊢ s
-
 abstract
   (σ₁ ≫ₛᵣ ρ₂) _ x = (σ₁ _ x) ⋯ᵣ ρ₂
   ≫ₛᵣ-def : (σ₁ : S₁ ⇛ₛ S₂) (ρ₂ : S₂ ⇛ᵣ S₃) (x : s ∈ S₁) → (σ₁ ≫ₛᵣ ρ₂) s x ≡ (σ₁ s x) ⋯ᵣ ρ₂
@@ -113,6 +111,7 @@ abstract
 _↑ₛ_ : S₁ ⇛ₛ S₂ → (s : Sort) → (s ∷ S₁) ⇛ₛ (s ∷ S₂)
 (σ ↑ₛ _) = (` (here refl)) ∷ₛ (σ ≫ₛᵣ wkᵣ)
 
+_⋯ₛ_ : S₁ ⊢ s → S₁ ⇛ₛ S₂ → S₂ ⊢ s
 (` x)         ⋯ₛ σ = (σ _ x)
 (λx e)        ⋯ₛ σ = λx (e ⋯ₛ (σ ↑ₛ expr))
 (Λα e)        ⋯ₛ σ = Λα (e ⋯ₛ (σ ↑ₛ type))
@@ -356,21 +355,7 @@ data _↪_ : S ⊢ expr → S ⊢ expr → Set where
     ------------------
     (e ∙ t) ↪ (e' ∙ t)
 
--- Soundness -------------------------------------------------------------------
-
-progress : 
-  ∅ ⊢ e ∶ t →
-  (∃[ e' ] (e ↪ e')) ⊎ Val e
-progress (⊢λ _) = inj₂ vλ
-progress (⊢Λ _) = inj₂ vΛ
-progress (⊢· {e₁ = e₁} {e₂ = e₂} ⊢e₁  ⊢e₂) with progress ⊢e₁ | progress ⊢e₂ 
-... | inj₁ (e₁' , e₁↪e₁') | _                   = inj₁ (e₁' · e₂ , ξ-·₁ e₁↪e₁')
-... | inj₂ v              | inj₁ (e₂' , e₂↪e₂') = inj₁ (e₁ · e₂' , ξ-·₂ e₂↪e₂' v)
-... | inj₂ (vλ {e = e₁})  | inj₂ v              = inj₁ (e₁ [ e₂ ] , β-λ v)
-progress (⊢∙ {t = t} ⊢e _ _) with progress ⊢e 
-... | inj₁ (e' , e↪e')  = inj₁ (e' ∙ t , ξ-∙ e↪e')
-... | inj₂ (vΛ {e = e}) = inj₁ (e [ t ] , β-Λ)
-
+-- Subject Reduction ----------------------------------------------------------- 
 
 ⊢wkᵣ : ∀ (Γ : Ctx S) (x : s ∈ S) (T : S ∶⊢ s) (T' : S ∶⊢ s') → x ∶ T ∈ Γ → (there x) ∶ (wk T) ∈ (Γ ، T')
 ⊢wkᵣ _ _ _ _ refl = refl
