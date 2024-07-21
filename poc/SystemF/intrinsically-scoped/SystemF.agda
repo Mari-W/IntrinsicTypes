@@ -3,14 +3,17 @@ module SystemF where
 
 -- Imports ---------------------------------------------------------------------
 
+open import Function using (id)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; cong₂; subst; trans; sym; module ≡-Reasoning)
+open ≡-Reasoning
 open import Data.Nat using (ℕ; zero; suc)
 open import Data.Sum.Base using (_⊎_; inj₁; inj₂)
 open import Data.Product using (_,_; ∃-syntax)
 open import Data.List using (List; []; _∷_; drop)
 open import Data.List.Relation.Unary.Any using (here; there)
+open import Data.List.Relation.Unary.All using (All; []; _∷_)
 open import Data.List.Membership.Propositional public using (_∈_)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; cong₂; subst; trans; sym)
-open import Function using (id)
+
 
 open import Agda.Builtin.Equality.Rewrite
 
@@ -130,77 +133,15 @@ abstract
 _[_] : (s' ∷ S) ⊢ s → S ⊢ s' → S ⊢ s
 T [ T' ] = T ⋯ₛ (T' ∷ₛ idₛ) 
 
-distributivityᵣᵣ : (x : s ∈ S₂) (ρ₁ : S₁ ⇛ᵣ S₂) (ρ₂ : S₂ ⇛ᵣ S₃) → (x ∷ᵣ ρ₁) ≫ᵣᵣ ρ₂ ≡ ρ₂ _ x ∷ᵣ (ρ₁ ≫ᵣᵣ ρ₂)  
-distributivityᵣᵣ _ _ _ = fun-ext (λ _ → fun-ext λ { (here refl) → ≫ᵣᵣ-def _ _ _ ; (there x) → trans (≫ᵣᵣ-def _ _ _) (sym (≫ᵣᵣ-def _ _ _)) })
-
-distributivityᵣₛ : (x : s ∈ S₂) (ρ₁ : S₁ ⇛ᵣ S₂) (σ₂ : S₂ ⇛ₛ S₃) → (x ∷ᵣ ρ₁) ≫ᵣₛ σ₂ ≡ σ₂ _ x ∷ₛ (ρ₁ ≫ᵣₛ σ₂)
-distributivityᵣₛ _ _ _ = fun-ext (λ _ → fun-ext λ { (here refl) → ≫ᵣₛ-def _ _ _ ; (there x) → trans (≫ᵣₛ-def _ _ _) (sym (≫ᵣₛ-def _ _ _)) })
-
-distributivityₛᵣ : (T : S₂ ⊢ s) (σ₁ : S₁ ⇛ₛ S₂) (ρ₂ : S₂ ⇛ᵣ S₃) → (T ∷ₛ σ₁) ≫ₛᵣ ρ₂ ≡ (T ⋯ᵣ ρ₂) ∷ₛ (σ₁ ≫ₛᵣ ρ₂)
-distributivityₛᵣ _ _ _ = fun-ext (λ _ → fun-ext λ { (here refl) → ≫ₛᵣ-def _ _ _ ; (there x) → trans (≫ₛᵣ-def _ _ _) (sym (≫ₛᵣ-def _ _ _)) })
-
-distributivityₛₛ : (T : S₂ ⊢ s) (σ₁ : S₁ ⇛ₛ S₂) (σ₂ : S₂ ⇛ₛ S₃) → (T ∷ₛ σ₁) ≫ₛₛ σ₂ ≡ (T ⋯ₛ σ₂) ∷ₛ (σ₁ ≫ₛₛ σ₂)
-distributivityₛₛ _ _ _ = fun-ext (λ _ → fun-ext λ { (here refl) → ≫ₛₛ-def _ _ _ ; (there x) → trans (≫ₛₛ-def _ _ _) (sym (≫ₛₛ-def _ _ _)) })
-
-η-id : _∷ᵣ_ {s = s} {S₁ = S} (here refl) wkᵣ ≡ idᵣ 
-η-id = fun-ext (λ _ → fun-ext λ { (here refl) → refl ; (there x) → refl })
-
-η-law : (σ : (s ∷ S₁) ⇛ₛ S₂) → (σ _ (here refl)) ∷ₛ (wkᵣ ≫ᵣₛ σ) ≡ σ
-η-law σ = fun-ext λ _ → fun-ext λ { (here refl) → refl ; (there x) → ≫ᵣₛ-def wkᵣ σ x }
-
-{-# REWRITE η-id η-law #-}
-
 {-# REWRITE ≫ᵣᵣ-def ≫ᵣₛ-def ≫ₛᵣ-def ≫ₛₛ-def #-}
 
-{-# REWRITE distributivityᵣᵣ distributivityᵣₛ distributivityₛᵣ distributivityₛₛ #-}
+η-id : _∷ᵣ_ {s = s} {S₁ = S₁} (here refl) wkᵣ ≡ idᵣ 
+η-id = fun-ext (λ _ → fun-ext λ { (here refl) → refl ; (there x) → refl })
 
-fusionᵣᵣ : (ρ₁ : S₁ ⇛ᵣ S₂) (ρ₂ : S₂ ⇛ᵣ S₃) (T : S₁ ⊢ s) → (T ⋯ᵣ ρ₁) ⋯ᵣ ρ₂ ≡ T ⋯ᵣ (ρ₁ ≫ᵣᵣ ρ₂)
-fusionᵣᵣ ρ₁ ρ₂ (` x)        = refl
-fusionᵣᵣ ρ₁ ρ₂ (λx e)       = cong λx_ (fusionᵣᵣ (ρ₁ ↑ᵣ expr) (ρ₂ ↑ᵣ expr) e)
-fusionᵣᵣ ρ₁ ρ₂ (Λα e)       = cong Λα_ (fusionᵣᵣ (ρ₁ ↑ᵣ type) (ρ₂ ↑ᵣ type) e)
-fusionᵣᵣ ρ₁ ρ₂ (∀[α∶ k ] t) = cong₂ ∀[α∶_]_ (fusionᵣᵣ ρ₁ ρ₂ k) (fusionᵣᵣ (ρ₁ ↑ᵣ type) (ρ₂ ↑ᵣ type) t)
-fusionᵣᵣ ρ₁ ρ₂ (e₁ · e₂)    = cong₂ _·_ (fusionᵣᵣ ρ₁ ρ₂ e₁) (fusionᵣᵣ ρ₁ ρ₂ e₂)
-fusionᵣᵣ ρ₁ ρ₂ (e ∙ t)      = cong₂ _∙_ (fusionᵣᵣ ρ₁ ρ₂ e) (fusionᵣᵣ ρ₁ ρ₂ t)
-fusionᵣᵣ ρ₁ ρ₂ (t₁ ⇒ t₂)    = cong₂ _⇒_ (fusionᵣᵣ ρ₁ ρ₂ t₁) (fusionᵣᵣ ρ₁ ρ₂ t₂)
-fusionᵣᵣ ρ₁ ρ₂ ★            = refl
+η-law : _∷ₛ_ {s = s} {S₁ = S₁} (` (here refl)) (wkᵣ ≫ᵣₛ idₛ) ≡ idₛ
+η-law = fun-ext λ _ → fun-ext λ { (here refl) → refl ; (there x) → refl }
 
-{-# REWRITE fusionᵣᵣ #-}
-
-fusionᵣₛ : (ρ₁ : S₁ ⇛ᵣ S₂) (σ₂ : S₂ ⇛ₛ S₃)  (T : S₁ ⊢ s) → (T ⋯ᵣ ρ₁) ⋯ₛ σ₂ ≡ T ⋯ₛ (ρ₁ ≫ᵣₛ σ₂)
-fusionᵣₛ ρ₁ σ₂ (` x)        = refl
-fusionᵣₛ ρ₁ σ₂ (λx e)       = cong λx_ (fusionᵣₛ (ρ₁ ↑ᵣ expr) (σ₂ ↑ₛ expr) e)
-fusionᵣₛ ρ₁ σ₂ (Λα e)       = cong Λα_ (fusionᵣₛ (ρ₁ ↑ᵣ type) (σ₂ ↑ₛ type) e)
-fusionᵣₛ ρ₁ σ₂ (∀[α∶ k ] t) = cong₂ ∀[α∶_]_ (fusionᵣₛ ρ₁ σ₂ k) (fusionᵣₛ (ρ₁ ↑ᵣ type) (σ₂ ↑ₛ type) t)
-fusionᵣₛ ρ₁ σ₂ (e₁ · e₂)    = cong₂ _·_ (fusionᵣₛ ρ₁ σ₂ e₁) (fusionᵣₛ ρ₁ σ₂ e₂)
-fusionᵣₛ ρ₁ σ₂ (e ∙ t)      = cong₂ _∙_ (fusionᵣₛ ρ₁ σ₂ e) (fusionᵣₛ ρ₁ σ₂ t)
-fusionᵣₛ ρ₁ σ₂ (t₁ ⇒ t₂)    = cong₂ _⇒_ (fusionᵣₛ ρ₁ σ₂ t₁) (fusionᵣₛ ρ₁ σ₂ t₂)
-fusionᵣₛ ρ₁ σ₂ ★            = refl
-
-{-# REWRITE fusionᵣₛ #-}
-
-fusionₛᵣ : (σ₁ : S₁ ⇛ₛ S₂) (ρ₂ : S₂ ⇛ᵣ S₃) (T : S₁ ⊢ s) → (T ⋯ₛ σ₁) ⋯ᵣ ρ₂ ≡ T ⋯ₛ (σ₁ ≫ₛᵣ ρ₂)
-fusionₛᵣ σ₁ ρ₂ (` x)        = refl
-fusionₛᵣ σ₁ ρ₂ (λx e)       = cong λx_ (fusionₛᵣ (σ₁ ↑ₛ expr) (ρ₂ ↑ᵣ expr) e)
-fusionₛᵣ σ₁ ρ₂ (Λα e)       = cong Λα_ (fusionₛᵣ (σ₁ ↑ₛ type) (ρ₂ ↑ᵣ type) e)
-fusionₛᵣ σ₁ ρ₂ (∀[α∶ k ] t) = cong₂ ∀[α∶_]_ (fusionₛᵣ σ₁ ρ₂ k) ((fusionₛᵣ (σ₁ ↑ₛ type) (ρ₂ ↑ᵣ type) t))
-fusionₛᵣ σ₁ ρ₂ (e₁ · e₂)    = cong₂ _·_ (fusionₛᵣ σ₁ ρ₂ e₁) (fusionₛᵣ σ₁ ρ₂ e₂)
-fusionₛᵣ σ₁ ρ₂ (e ∙ t)      = cong₂ _∙_ (fusionₛᵣ σ₁ ρ₂ e) (fusionₛᵣ σ₁ ρ₂ t)
-fusionₛᵣ σ₁ ρ₂ (t₁ ⇒ t₂)    = cong₂ _⇒_ (fusionₛᵣ σ₁ ρ₂ t₁) (fusionₛᵣ σ₁ ρ₂ t₂)
-fusionₛᵣ σ₁ ρ₂ ★            = refl
-
-{-# REWRITE fusionₛᵣ #-}
-
-fusionₛₛ : (σ₁ : S₁ ⇛ₛ S₂) (σ₂ : S₂ ⇛ₛ S₃) (T : S₁ ⊢ s) → (T ⋯ₛ σ₁) ⋯ₛ σ₂ ≡ T ⋯ₛ (σ₁ ≫ₛₛ σ₂)
-fusionₛₛ σ₁ σ₂ (` x)        = refl
-fusionₛₛ σ₁ σ₂ (λx e)       = cong λx_ (fusionₛₛ (σ₁ ↑ₛ expr) (σ₂ ↑ₛ expr) e)
-fusionₛₛ σ₁ σ₂ (Λα e)       = cong Λα_ (fusionₛₛ (σ₁ ↑ₛ type) (σ₂ ↑ₛ type) e)
-fusionₛₛ σ₁ σ₂ (∀[α∶ k ] t) = cong₂ ∀[α∶_]_ (fusionₛₛ σ₁ σ₂ k) (fusionₛₛ (σ₁ ↑ₛ type) (σ₂ ↑ₛ type) t)
-fusionₛₛ σ₁ σ₂ (e₁ · e₂)    = cong₂ _·_ (fusionₛₛ σ₁ σ₂ e₁) (fusionₛₛ σ₁ σ₂ e₂)
-fusionₛₛ σ₁ σ₂ (e ∙ t)      = cong₂ _∙_ (fusionₛₛ σ₁ σ₂ e) (fusionₛₛ σ₁ σ₂ t)
-fusionₛₛ σ₁ σ₂ (t₁ ⇒ t₂)    = cong₂ _⇒_ (fusionₛₛ σ₁ σ₂ t₁) (fusionₛₛ σ₁ σ₂ t₂)
-fusionₛₛ σ₁ σ₂ ★            = refl
-
-{-# REWRITE fusionₛₛ #-}
+{-# REWRITE η-id η-law #-}
 
 ⋯idᵣ : (T : S ⊢ s) → T ⋯ᵣ idᵣ ≡ T 
 ⋯idᵣ (` x)        = refl
@@ -212,17 +153,11 @@ fusionₛₛ σ₁ σ₂ ★            = refl
 ⋯idᵣ (t₁ ⇒ t₂)    = cong₂ _⇒_ (⋯idᵣ t₁) (⋯idᵣ t₂)
 ⋯idᵣ ★            = refl
 
-↑idₛ : _∷ₛ_ {s = s} {S₁ = S} (` here refl) (idₛ ≫ₛᵣ wkᵣ) ≡ idₛ 
-↑idₛ = fun-ext (λ _ → fun-ext λ { (here refl) → refl ; (there x) → refl })
--- not part of the theory, although it should not hurt i guess?
--- would remove the substs in the next lemma, thus easing generating proofs by reflection
---{-# REWRITE ↑idₛ #-}
-
 ⋯idₛ : (T : S ⊢ s) → T ⋯ₛ idₛ ≡ T 
 ⋯idₛ (` x)        = refl
-⋯idₛ (λx e)       = cong λx_ (subst (λ σ → (e ⋯ₛ σ) ≡ e) (sym ↑idₛ) (⋯idₛ e))
-⋯idₛ (Λα e)       = cong Λα_ (subst (λ σ → (e ⋯ₛ σ) ≡ e) (sym ↑idₛ) (⋯idₛ e))
-⋯idₛ (∀[α∶ k ] t) = cong₂ ∀[α∶_]_ (⋯idₛ k) (subst (λ σ → (t ⋯ₛ σ ) ≡ t) (sym ↑idₛ) (⋯idₛ t))
+⋯idₛ (λx e)       = cong λx_ (⋯idₛ e)
+⋯idₛ (Λα e)       = cong Λα_ (⋯idₛ e)
+⋯idₛ (∀[α∶ k ] t) = cong₂ ∀[α∶_]_ (⋯idₛ k) (⋯idₛ t)
 ⋯idₛ (e₁ · e₂)    = cong₂ _·_ (⋯idₛ e₁) (⋯idₛ e₂)
 ⋯idₛ (e ∙ t)      = cong₂ _∙_ (⋯idₛ e) (⋯idₛ t)
 ⋯idₛ (t₁ ⇒ t₂)    = cong₂ _⇒_ (⋯idₛ t₁) (⋯idₛ t₂)
@@ -230,17 +165,76 @@ fusionₛₛ σ₁ σ₂ ★            = refl
 
 {-# REWRITE ⋯idᵣ ⋯idₛ #-}
 
-↑coincidence : {ρ : S₁ ⇛ᵣ S₂} → ((ρ ↑ᵣ s) ≫ᵣₛ idₛ) ≡ (ρ ≫ᵣₛ idₛ) ↑ₛ s
-↑coincidence = fun-ext (λ _ → fun-ext λ { (here refl) → refl ; (there x) → refl })
--- not part of the theory, although it should not hurt i guess?
--- would remove the substs in the next lemma, thus easing generating proofs by reflection
--- {-# REWRITE ↑coincidence #-} 
+distributivityᵣᵣ : (x : s ∈ S₂) (ρ₁ : S₁ ⇛ᵣ S₂) (ρ₂ : S₂ ⇛ᵣ S₃) → (x ∷ᵣ ρ₁) ≫ᵣᵣ ρ₂ ≡ ρ₂ _ x ∷ᵣ (ρ₁ ≫ᵣᵣ ρ₂)  
+distributivityᵣᵣ _ _ _ = fun-ext (λ _ → fun-ext λ { (here refl) → refl ; (there x) → refl })
+
+distributivityᵣₛ : (x : s ∈ S₂) (ρ₁ : S₁ ⇛ᵣ S₂) (σ₂ : S₂ ⇛ₛ S₃) → (x ∷ᵣ ρ₁) ≫ᵣₛ σ₂ ≡ σ₂ _ x ∷ₛ (ρ₁ ≫ᵣₛ σ₂)
+distributivityᵣₛ _ _ _ = fun-ext (λ _ → fun-ext λ { (here refl) → refl ; (there x) → refl })
+
+distributivityₛᵣ : (T : S₂ ⊢ s) (σ₁ : S₁ ⇛ₛ S₂) (ρ₂ : S₂ ⇛ᵣ S₃) → (T ∷ₛ σ₁) ≫ₛᵣ ρ₂ ≡ (T ⋯ᵣ ρ₂) ∷ₛ (σ₁ ≫ₛᵣ ρ₂)
+distributivityₛᵣ _ _ _ = fun-ext (λ _ → fun-ext λ { (here refl) → refl ; (there x) → refl })
+
+distributivityₛₛ : (T : S₂ ⊢ s) (σ₁ : S₁ ⇛ₛ S₂) (σ₂ : S₂ ⇛ₛ S₃) → (T ∷ₛ σ₁) ≫ₛₛ σ₂ ≡ (T ⋯ₛ σ₂) ∷ₛ (σ₁ ≫ₛₛ σ₂)
+distributivityₛₛ _ _ _ = fun-ext (λ _ → fun-ext λ { (here refl) → refl ; (there x) → refl })
+
+{-# REWRITE distributivityᵣᵣ distributivityᵣₛ distributivityₛᵣ distributivityₛₛ #-}
+
+compositionalityᵣᵣ : (ρ₁ : S₁ ⇛ᵣ S₂) (ρ₂ : S₂ ⇛ᵣ S₃) (T : S₁ ⊢ s) → (T ⋯ᵣ ρ₁) ⋯ᵣ ρ₂ ≡ T ⋯ᵣ (ρ₁ ≫ᵣᵣ ρ₂)
+compositionalityᵣᵣ ρ₁ ρ₂ (` x)        = refl
+compositionalityᵣᵣ ρ₁ ρ₂ (λx e)       = cong λx_ (compositionalityᵣᵣ (ρ₁ ↑ᵣ expr) (ρ₂ ↑ᵣ expr) e)
+compositionalityᵣᵣ ρ₁ ρ₂ (Λα e)       = cong Λα_ (compositionalityᵣᵣ (ρ₁ ↑ᵣ type) (ρ₂ ↑ᵣ type) e)
+compositionalityᵣᵣ ρ₁ ρ₂ (∀[α∶ k ] t) = cong₂ ∀[α∶_]_ (compositionalityᵣᵣ ρ₁ ρ₂ k) (compositionalityᵣᵣ (ρ₁ ↑ᵣ type) (ρ₂ ↑ᵣ type) t)
+compositionalityᵣᵣ ρ₁ ρ₂ (e₁ · e₂)    = cong₂ _·_ (compositionalityᵣᵣ ρ₁ ρ₂ e₁) (compositionalityᵣᵣ ρ₁ ρ₂ e₂)
+compositionalityᵣᵣ ρ₁ ρ₂ (e ∙ t)      = cong₂ _∙_ (compositionalityᵣᵣ ρ₁ ρ₂ e) (compositionalityᵣᵣ ρ₁ ρ₂ t)
+compositionalityᵣᵣ ρ₁ ρ₂ (t₁ ⇒ t₂)    = cong₂ _⇒_ (compositionalityᵣᵣ ρ₁ ρ₂ t₁) (compositionalityᵣᵣ ρ₁ ρ₂ t₂)
+compositionalityᵣᵣ ρ₁ ρ₂ ★            = refl
+
+{-# REWRITE compositionalityᵣᵣ #-}
+
+compositionalityᵣₛ : (ρ₁ : S₁ ⇛ᵣ S₂) (σ₂ : S₂ ⇛ₛ S₃)  (T : S₁ ⊢ s) → (T ⋯ᵣ ρ₁) ⋯ₛ σ₂ ≡ T ⋯ₛ (ρ₁ ≫ᵣₛ σ₂)
+compositionalityᵣₛ ρ₁ σ₂ (` x)        = refl
+compositionalityᵣₛ ρ₁ σ₂ (λx e)       = cong λx_ (compositionalityᵣₛ (ρ₁ ↑ᵣ expr) (σ₂ ↑ₛ expr) e)
+compositionalityᵣₛ ρ₁ σ₂ (Λα e)       = cong Λα_ (compositionalityᵣₛ (ρ₁ ↑ᵣ type) (σ₂ ↑ₛ type) e)
+compositionalityᵣₛ ρ₁ σ₂ (∀[α∶ k ] t) = cong₂ ∀[α∶_]_ (compositionalityᵣₛ ρ₁ σ₂ k) (compositionalityᵣₛ (ρ₁ ↑ᵣ type) (σ₂ ↑ₛ type) t)
+compositionalityᵣₛ ρ₁ σ₂ (e₁ · e₂)    = cong₂ _·_ (compositionalityᵣₛ ρ₁ σ₂ e₁) (compositionalityᵣₛ ρ₁ σ₂ e₂)
+compositionalityᵣₛ ρ₁ σ₂ (e ∙ t)      = cong₂ _∙_ (compositionalityᵣₛ ρ₁ σ₂ e) (compositionalityᵣₛ ρ₁ σ₂ t)
+compositionalityᵣₛ ρ₁ σ₂ (t₁ ⇒ t₂)    = cong₂ _⇒_ (compositionalityᵣₛ ρ₁ σ₂ t₁) (compositionalityᵣₛ ρ₁ σ₂ t₂)
+compositionalityᵣₛ ρ₁ σ₂ ★            = refl
+
+{-# REWRITE compositionalityᵣₛ #-}
+
+compositionalityₛᵣ : (σ₁ : S₁ ⇛ₛ S₂) (ρ₂ : S₂ ⇛ᵣ S₃) (T : S₁ ⊢ s) → (T ⋯ₛ σ₁) ⋯ᵣ ρ₂ ≡ T ⋯ₛ (σ₁ ≫ₛᵣ ρ₂)
+compositionalityₛᵣ σ₁ ρ₂ (` x)        = refl
+compositionalityₛᵣ σ₁ ρ₂ (λx e)       = cong λx_ (compositionalityₛᵣ (σ₁ ↑ₛ expr) (ρ₂ ↑ᵣ expr) e)
+compositionalityₛᵣ σ₁ ρ₂ (Λα e)       = cong Λα_ (compositionalityₛᵣ (σ₁ ↑ₛ type) (ρ₂ ↑ᵣ type) e)
+compositionalityₛᵣ σ₁ ρ₂ (∀[α∶ k ] t) = cong₂ ∀[α∶_]_ (compositionalityₛᵣ σ₁ ρ₂ k) ((compositionalityₛᵣ (σ₁ ↑ₛ type) (ρ₂ ↑ᵣ type) t))
+compositionalityₛᵣ σ₁ ρ₂ (e₁ · e₂)    = cong₂ _·_ (compositionalityₛᵣ σ₁ ρ₂ e₁) (compositionalityₛᵣ σ₁ ρ₂ e₂)
+compositionalityₛᵣ σ₁ ρ₂ (e ∙ t)      = cong₂ _∙_ (compositionalityₛᵣ σ₁ ρ₂ e) (compositionalityₛᵣ σ₁ ρ₂ t)
+compositionalityₛᵣ σ₁ ρ₂ (t₁ ⇒ t₂)    = cong₂ _⇒_ (compositionalityₛᵣ σ₁ ρ₂ t₁) (compositionalityₛᵣ σ₁ ρ₂ t₂)
+compositionalityₛᵣ σ₁ ρ₂ ★            = refl
+
+{-# REWRITE compositionalityₛᵣ #-}
+
+compositionalityₛₛ : (σ₁ : S₁ ⇛ₛ S₂) (σ₂ : S₂ ⇛ₛ S₃) (T : S₁ ⊢ s) → (T ⋯ₛ σ₁) ⋯ₛ σ₂ ≡ T ⋯ₛ (σ₁ ≫ₛₛ σ₂)
+compositionalityₛₛ σ₁ σ₂ (` x)        = refl
+compositionalityₛₛ σ₁ σ₂ (λx e)       = cong λx_ (compositionalityₛₛ (σ₁ ↑ₛ expr) (σ₂ ↑ₛ expr) e)
+compositionalityₛₛ σ₁ σ₂ (Λα e)       = cong Λα_ (compositionalityₛₛ (σ₁ ↑ₛ type) (σ₂ ↑ₛ type) e)
+compositionalityₛₛ σ₁ σ₂ (∀[α∶ k ] t) = cong₂ ∀[α∶_]_ (compositionalityₛₛ σ₁ σ₂ k) (compositionalityₛₛ (σ₁ ↑ₛ type) (σ₂ ↑ₛ type) t)
+compositionalityₛₛ σ₁ σ₂ (e₁ · e₂)    = cong₂ _·_ (compositionalityₛₛ σ₁ σ₂ e₁) (compositionalityₛₛ σ₁ σ₂ e₂)
+compositionalityₛₛ σ₁ σ₂ (e ∙ t)      = cong₂ _∙_ (compositionalityₛₛ σ₁ σ₂ e) (compositionalityₛₛ σ₁ σ₂ t)
+compositionalityₛₛ σ₁ σ₂ (t₁ ⇒ t₂)    = cong₂ _⇒_ (compositionalityₛₛ σ₁ σ₂ t₁) (compositionalityₛₛ σ₁ σ₂ t₂)
+compositionalityₛₛ σ₁ σ₂ ★            = refl
+
+{-# REWRITE compositionalityₛₛ #-}
+
+↑coincidence : (ρ : S₁ ⇛ᵣ S₂) (s : Sort) → (` here refl) ∷ₛ ((λ z s₁ → there (ρ z s₁)) ≫ᵣₛ (λ z → `_)) ≡ (ρ ≫ᵣₛ idₛ) ↑ₛ s
+↑coincidence _ _ = fun-ext (λ _ → fun-ext λ { (here refl) → refl ; (there x) → refl })
 
 coincidence : (ρ : S₁ ⇛ᵣ S₂) (T : S₁ ⊢ s) → T ⋯ₛ (ρ ≫ᵣₛ idₛ) ≡ T ⋯ᵣ ρ
 coincidence ρ (` x)        = refl
-coincidence ρ (λx e)       = cong λx_ (subst (λ σ → e ⋯ₛ σ ≡ (e ⋯ᵣ (ρ ↑ᵣ expr))) ↑coincidence (coincidence (ρ ↑ᵣ expr) e))
-coincidence ρ (Λα e)       = cong Λα_ (subst (λ σ → e ⋯ₛ σ ≡ (e ⋯ᵣ (ρ ↑ᵣ type))) ↑coincidence (coincidence (ρ ↑ᵣ type) e))
-coincidence ρ (∀[α∶ k ] t) = cong₂ ∀[α∶_]_ (coincidence ρ k) (subst (λ σ → t ⋯ₛ σ ≡ (t ⋯ᵣ (ρ ↑ᵣ type))) ↑coincidence (coincidence (ρ ↑ᵣ type) t))
+coincidence ρ (λx e)       = cong λx_ (subst (λ σ → e ⋯ₛ σ ≡ (e ⋯ᵣ (ρ ↑ᵣ expr))) (↑coincidence _ _) (coincidence (ρ ↑ᵣ expr) e))
+coincidence ρ (Λα e)       = cong Λα_ (subst (λ σ → e ⋯ₛ σ ≡ (e ⋯ᵣ (ρ ↑ᵣ type))) (↑coincidence _ _) (coincidence (ρ ↑ᵣ type) e))
+coincidence ρ (∀[α∶ k ] t) = cong₂ ∀[α∶_]_ (coincidence ρ k) (subst (λ σ → t ⋯ₛ σ ≡ (t ⋯ᵣ (ρ ↑ᵣ type))) (↑coincidence _ _) (coincidence (ρ ↑ᵣ type) t))
 coincidence ρ (e₁ · e₂)    = cong₂ _·_ (coincidence ρ e₁) (coincidence ρ e₂)
 coincidence ρ (e ∙ t)      = cong₂ _∙_ (coincidence ρ e) (coincidence ρ t)
 coincidence ρ (t₁ ⇒ t₂)    = cong₂ _⇒_ (coincidence ρ t₁) (coincidence ρ t₂)
@@ -405,4 +399,4 @@ subject-reduction (⊢· (⊢λ ⊢e₁) ⊢e₂)             (β-λ v₂)      
 subject-reduction (⊢· ⊢e₁ ⊢e₂)                  (ξ-·₁ e₁↪e)   = ⊢· (subject-reduction ⊢e₁ e₁↪e) ⊢e₂
 subject-reduction (⊢· ⊢e₁ ⊢e₂)                  (ξ-·₂ e₂↪e x) = ⊢· ⊢e₁ (subject-reduction ⊢e₂ e₂↪e)       
 subject-reduction (⊢∙ {t' = t'} (⊢Λ ⊢e) ⊢t ⊢t') β-Λ           = ⊢σ-preserves (⊢[] ⊢t) ⊢e        
-subject-reduction (⊢∙ ⊢e ⊢t ⊢t')                (ξ-∙ e↪e')    = ⊢∙ (subject-reduction ⊢e e↪e') ⊢t ⊢t'                          
+subject-reduction (⊢∙ ⊢e ⊢t ⊢t')                (ξ-∙ e↪e')    = ⊢∙ (subject-reduction ⊢e e↪e') ⊢t ⊢t'                                  
