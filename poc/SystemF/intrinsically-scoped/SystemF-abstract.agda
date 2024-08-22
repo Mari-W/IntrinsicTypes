@@ -132,7 +132,7 @@ abstract
       ∷ₛ-def₂            : (T : S₂ ⊢ s) (x : s' ∈ S₁) (σ : S₁ ⇛ₛ S₂) → (T ∷ₛ σ) _ (there x) ≡ σ _ x
     
       -- Substitution Instantiation Primitves
-      `_⋯ₛ_              : (x : s ∈ S₁) (σ : S₁ ⇛ₛ S₂) → (` x) ⋯ₛ σ ≡ σ s x 
+      `_⋯ₛ_              : (x : s ∈ S₁) (σ : S₁ ⇛ₛ S₂) →_1
       λx_⋯ₛ_             : (e : (expr ∷ S₁) ⊢ expr) (σ : S₁ ⇛ₛ S₂) → (λx e) ⋯ₛ σ ≡ (λx (e ⋯ₛ ((` (here refl)) ∷ₛ (σ ≫ₛᵣ wkᵣ))))
       Λα_⋯ₛ_             : (e : (type ∷ S₁) ⊢ expr) (σ : S₁ ⇛ₛ S₂) → (Λα e) ⋯ₛ σ ≡ (Λα (e ⋯ₛ ((` (here refl)) ∷ₛ (σ ≫ₛᵣ wkᵣ))))
       ∀[α∶_]_⋯ₛ_         : (k : S₁ ⊢ kind) (t : (type ∷ S₁) ⊢ type) (σ : S₁ ⇛ₛ S₂) → (∀[α∶ k ] t) ⋯ₛ σ ≡ ∀[α∶ k ⋯ₛ σ ] (t ⋯ₛ ((` (here refl)) ∷ₛ (σ ≫ₛᵣ wkᵣ)))
@@ -170,6 +170,8 @@ abstract
       -- Eta Laws
       η-idᵣ              : _∷ᵣ_ {s = s} {S₁ = S} (here refl) wkᵣ ≡ idᵣ 
       η-idₛ              : _∷ₛ_ {s = s} {S₁ = S} (` here refl) (wkᵣ ≫ᵣₛ idₛ) ≡ idₛ
+      η-lawₛ : (σ : (s ∷ S₁) ⇛ₛ S₂) → _∷ₛ_ {s = s} {S₁ = S₁} (σ _ (here refl)) (wkᵣ ≫ᵣₛ σ) ≡ σ
+      η-lawᵣ : (ρ : (s ∷ S₁) ⇛ᵣ S₂) → _∷ᵣ_ {s = s} {S₁ = S₁} (ρ _ (here refl)) (wkᵣ ≫ᵣᵣ ρ) ≡ ρ
    
       -- Interaction Laws
       interactᵣ          : (x : s ∈ S₂) (ρ : S₁ ⇛ᵣ S₂) → wkᵣ ≫ᵣᵣ (x ∷ᵣ ρ) ≡ ρ 
@@ -216,14 +218,16 @@ T [ T' ] = T ⋯ₛ (T' ∷ₛ idₛ)
 {-# REWRITE interactᵣ interactₛ #-}
 {-# REWRITE associativityᵣᵣᵣ associativityᵣᵣₛ associativityᵣₛᵣ associativityᵣₛₛ associativityₛᵣᵣ associativityₛᵣₛ  associativityₛₛᵣ associativityₛₛₛ #-}
 
-{-# REWRITE η-idᵣ η-idₛ #-}
-
 {-# REWRITE ≫ᵣᵣ-def ≫ᵣₛ-def ≫ₛᵣ-def ≫ₛₛ-def #-}
+{-# REWRITE η-idᵣ η-idₛ η-lawᵣ η-lawₛ #-}
 
 {-# REWRITE distributivityᵣᵣ distributivityᵣₛ distributivityₛᵣ distributivityₛₛ #-}
 {-# REWRITE ⋯idᵣ ⋯idₛ #-}
 {-# REWRITE compositionalityᵣᵣ compositionalityᵣₛ compositionalityₛᵣ compositionalityₛₛ #-}
 {-# REWRITE coincidence #-}
+
+foo : (ρ : (s ∷ S₁) ⇛ᵣ S₂) → _∷ᵣ_ {s = s} {S₁ = S₁} (ρ _ (here refl)) (wkᵣ ≫ᵣᵣ ρ) ≡ ρ
+foo ρ = {! refl  !}
 
 variable
   ρ ρ₁ ρ₂ ρ₃ ρ₄ ρ' ρ₁' ρ₂' ρ₃' ρ₄' : S₁ ⇛ᵣ S₂

@@ -138,8 +138,8 @@ T [ T' ] = T ⋯ₛ (T' ∷ₛ idₛ)
 η-id : _∷ᵣ_ {s = s} {S₁ = S₁} (here refl) wkᵣ ≡ idᵣ 
 η-id = fun-ext (λ _ → fun-ext λ { (here refl) → refl ; (there x) → refl })
 
-η-law : _∷ₛ_ {s = s} {S₁ = S₁} (` (here refl)) (wkᵣ ≫ᵣₛ idₛ) ≡ idₛ
-η-law = fun-ext λ _ → fun-ext λ { (here refl) → refl ; (there x) → refl }
+η-law : (σ : (s ∷ S₁) ⇛ₛ S₂) → _∷ₛ_ {s = s} {S₁ = S₁} (σ _ ( (here refl))) (wkᵣ ≫ᵣₛ σ) ≡ σ
+η-law = ?
 
 {-# REWRITE η-id η-law #-}
 
