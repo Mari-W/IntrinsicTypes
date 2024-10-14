@@ -1,4 +1,4 @@
-{-# OPTIONS --rewriting #-}
+{-# OPTIONS --rewriting --local-confluence-check #-}
 module SystemF-abstract where
 
 -- Imports ---------------------------------------------------------------------
@@ -132,7 +132,7 @@ abstract
       ∷ₛ-def₂            : (T : S₂ ⊢ s) (x : s' ∈ S₁) (σ : S₁ ⇛ₛ S₂) → (T ∷ₛ σ) _ (there x) ≡ σ _ x
     
       -- Substitution Instantiation Primitves
-      `_⋯ₛ_              : (x : s ∈ S₁) (σ : S₁ ⇛ₛ S₂) →_1
+      `_⋯ₛ_              : (x : s ∈ S₁) (σ : S₁ ⇛ₛ S₂) → (` x) ⋯ₛ σ ≡ σ s x 
       λx_⋯ₛ_             : (e : (expr ∷ S₁) ⊢ expr) (σ : S₁ ⇛ₛ S₂) → (λx e) ⋯ₛ σ ≡ (λx (e ⋯ₛ ((` (here refl)) ∷ₛ (σ ≫ₛᵣ wkᵣ))))
       Λα_⋯ₛ_             : (e : (type ∷ S₁) ⊢ expr) (σ : S₁ ⇛ₛ S₂) → (Λα e) ⋯ₛ σ ≡ (Λα (e ⋯ₛ ((` (here refl)) ∷ₛ (σ ≫ₛᵣ wkᵣ))))
       ∀[α∶_]_⋯ₛ_         : (k : S₁ ⊢ kind) (t : (type ∷ S₁) ⊢ type) (σ : S₁ ⇛ₛ S₂) → (∀[α∶ k ] t) ⋯ₛ σ ≡ ∀[α∶ k ⋯ₛ σ ] (t ⋯ₛ ((` (here refl)) ∷ₛ (σ ≫ₛᵣ wkᵣ)))
@@ -209,25 +209,27 @@ _↑ₛ_ : S₁ ⇛ₛ S₂ → (s : Sort) → (s ∷ S₁) ⇛ₛ (s ∷ S₂)
 _[_] : (s' ∷ S) ⊢ s → S ⊢ s' → S ⊢ s
 T [ T' ] = T ⋯ₛ (T' ∷ₛ idₛ) 
 
+
 {-# REWRITE idₛ-def ∷ₛ-def₁ ∷ₛ-def₂ #-}
 {-# REWRITE idᵣ-def wkᵣ-def ∷ᵣ-def₁ ∷ᵣ-def₂ #-}
 {-# REWRITE `_⋯ᵣ_ λx_⋯ᵣ_ Λα_⋯ᵣ_ ∀[α∶_]_⋯ᵣ_ _·_⋯ᵣ_ _∙_⋯ᵣ_ _⇒_⋯ᵣ_ ★⋯ᵣ_ #-}
 {-# REWRITE `_⋯ₛ_ λx_⋯ₛ_ Λα_⋯ₛ_ ∀[α∶_]_⋯ₛ_ _·_⋯ₛ_ _∙_⋯ₛ_ _⇒_⋯ₛ_ ★⋯ₛ_ #-}
 
-{-# REWRITE left-idᵣᵣ right-idᵣᵣ left-idᵣₛ left-idₛᵣ right-idₛᵣ left-idₛₛ right-idₛₛ #-}
-{-# REWRITE interactᵣ interactₛ #-}
-{-# REWRITE associativityᵣᵣᵣ associativityᵣᵣₛ associativityᵣₛᵣ associativityᵣₛₛ associativityₛᵣᵣ associativityₛᵣₛ  associativityₛₛᵣ associativityₛₛₛ #-}
+-- {-# REWRITE left-idᵣᵣ right-idᵣᵣ left-idᵣₛ left-idₛᵣ right-idₛᵣ left-idₛₛ right-idₛₛ #-}
+{-# REWRITE left-idₛᵣ right-idₛᵣ left-idₛₛ right-idₛₛ #-}
+
+-- {-# REWRITE interactᵣ interactₛ #-}
+{-# REWRITE associativityₛᵣᵣ associativityₛᵣₛ  associativityₛₛᵣ associativityₛₛₛ #-}
+-- {-# REWRITE associativityᵣᵣᵣ associativityᵣᵣₛ associativityᵣₛᵣ associativityᵣₛₛ associativityₛᵣᵣ associativityₛᵣₛ  associativityₛₛᵣ associativityₛₛₛ #-}
+-- {-# REWRITE η-idᵣ η-idₛ η-lawᵣ η-lawₛ #-}
 
 {-# REWRITE ≫ᵣᵣ-def ≫ᵣₛ-def ≫ₛᵣ-def ≫ₛₛ-def #-}
-{-# REWRITE η-idᵣ η-idₛ η-lawᵣ η-lawₛ #-}
 
 {-# REWRITE distributivityᵣᵣ distributivityᵣₛ distributivityₛᵣ distributivityₛₛ #-}
 {-# REWRITE ⋯idᵣ ⋯idₛ #-}
+{-# REWRITE compositionalityᵣᵣ compositionalityᵣₛ compositionalityₛᵣ #-}
 {-# REWRITE compositionalityᵣᵣ compositionalityᵣₛ compositionalityₛᵣ compositionalityₛₛ #-}
 {-# REWRITE coincidence #-}
-
-foo : (ρ : (s ∷ S₁) ⇛ᵣ S₂) → _∷ᵣ_ {s = s} {S₁ = S₁} (ρ _ (here refl)) (wkᵣ ≫ᵣᵣ ρ) ≡ ρ
-foo ρ = {! refl  !}
 
 variable
   ρ ρ₁ ρ₂ ρ₃ ρ₄ ρ' ρ₁' ρ₂' ρ₃' ρ₄' : S₁ ⇛ᵣ S₂
@@ -386,4 +388,4 @@ subject-reduction (⊢· (⊢λ ⊢e₁) ⊢e₂)             (β-λ v₂)      
 subject-reduction (⊢· ⊢e₁ ⊢e₂)                  (ξ-·₁ e₁↪e)   = ⊢· (subject-reduction ⊢e₁ e₁↪e) ⊢e₂
 subject-reduction (⊢· ⊢e₁ ⊢e₂)                  (ξ-·₂ e₂↪e x) = ⊢· ⊢e₁ (subject-reduction ⊢e₂ e₂↪e)       
 subject-reduction (⊢∙ {t' = t'} (⊢Λ ⊢e) ⊢t ⊢t') β-Λ           = ⊢σ-preserves (⊢[] ⊢t) ⊢e        
-subject-reduction (⊢∙ ⊢e ⊢t ⊢t')                (ξ-∙ e↪e')    = ⊢∙ (subject-reduction ⊢e e↪e') ⊢t ⊢t'                                  
+subject-reduction (⊢∙ ⊢e ⊢t ⊢t')                (ξ-∙ e↪e')    = ⊢∙ (subject-reduction ⊢e e↪e') ⊢t ⊢t'                                   

@@ -118,21 +118,10 @@ record Syntax : Set₁ where
     field
       _⋯_    :  ∀ ⦃ K : Kit _∋/⊢_ ⦄ →
                 S₁ ⊢ s → S₁ –[ K ]→ S₂ → S₂ ⊢ s
-      ⋯-var  :  ∀  ⦃ K : Kit _∋/⊢_ ⦄ (x : S₁ ∋ s) (ϕ : S₁ –[ K ]→ S₂) →
-                (` x) ⋯ ϕ ≡ `/id (x & ϕ)
       ⋯-id   :  ∀  ⦃ K : Kit _∋/⊢_ ⦄ (t : S ⊢ s) →
                 t ⋯ id ⦃ K ⦄ ≡ t
-
-    module Example {_∋/⊢_ : Scoped} ⦃ K : Kit _∋/⊢_ ⦄ where
-      ex₁ : Set
-      ex₁ = ∀ {S s} →
-        ∀ s' (x : S ∋ s) →
-        wk s' (id/` x) ≡ id/` (suc x)
-
-      ex₂ : Set
-      ex₂ =  ∀ {S s} →
-          ∀ s' (x/t : S ∋/⊢ s) →
-          `/id (wk s' x/t) ≡ `/id x/t ⋯ weaken s'
+      ⋯-var  :  ∀  ⦃ K : Kit _∋/⊢_ ⦄ (x : S₁ ∋ s) (ϕ : S₁ –[ K ]→ S₂) →
+                (` x) ⋯ ϕ ≡ `/id (x & ϕ)
 
     instance
       Kᵣ : Kit _∋_

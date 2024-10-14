@@ -71,8 +71,7 @@ _T⇛ₛ_ : Env → Env → Set
 Tidₛ : Δ T⇛ₛ Δ
 Tidₛ _ = `_
 
-_T∷ₛ_ : Type Δ₂ ℓ → Δ₁ T⇛ₛ Δ₂ → (ℓ ∷ Δ₁) T⇛ₛ Δ₂kunterbunt
-
+_T∷ₛ_ : Type Δ₂ ℓ → Δ₁ T⇛ₛ Δ₂ → (ℓ ∷ Δ₁) T⇛ₛ Δ₂
 (T T∷ₛ _) _ (here refl) = T
 (_ T∷ₛ ρ) _ (there x) = ρ _ x
 
@@ -82,9 +81,7 @@ abstract
   T≫ᵣₛ-def : (ρ₁ : Δ₁ T⇛ᵣ Δ₂) (σ₂ : Δ₂ T⇛ₛ Δ₃) (x : ℓ ∈ Δ₁) → (ρ₁ T≫ᵣₛ σ₂) _ x ≡ σ₂ _ (ρ₁ _ x)
   T≫ᵣₛ-def _ _ _ = refl
 
-_T⋯ₛ_ : Type Δ₁ ℓ → Δ₁ T⇛ₛ Δ₂ → Type Δ₂ ℓ
 _T≫ₛᵣ_ : Δ₁ T⇛ₛ Δ₂ → Δ₂ T⇛ᵣ Δ₃ → Δ₁ T⇛ₛ Δ₃
-
 abstract 
   (σ₁ T≫ₛᵣ ρ₂) _ x = (σ₁ _ x) T⋯ᵣ ρ₂
   T≫ₛᵣ-def : (σ₁ : Δ₁ T⇛ₛ Δ₂) (ρ₂ : Δ₂ T⇛ᵣ Δ₃) (x : ℓ ∈ Δ₁) → (σ₁ T≫ₛᵣ ρ₂) _ x ≡ (σ₁ _ x) T⋯ᵣ ρ₂
@@ -93,6 +90,7 @@ abstract
 _T↑ₛ_ : Δ₁ T⇛ₛ Δ₂ → (ℓ : Level) → (ℓ ∷ Δ₁) T⇛ₛ (ℓ ∷ Δ₂)
 σ T↑ₛ _ = (` (here refl)) T∷ₛ (σ T≫ₛᵣ Twkᵣ)
 
+_T⋯ₛ_ : Type Δ₁ ℓ → Δ₁ T⇛ₛ Δ₂ → Type Δ₂ ℓ
 (` x)      T⋯ₛ σ = (σ _ x)
 (T₁ ⇒ T₂)  T⋯ₛ σ = (T₁ T⋯ₛ σ) ⇒ (T₂ T⋯ₛ σ)
 (∀α ℓ , T) T⋯ₛ σ = ∀α ℓ , (T T⋯ₛ (σ T↑ₛ ℓ))
@@ -350,10 +348,10 @@ E↑coincidence _ _ _ = fun-ext (λ _ → fun-ext (λ _ → fun-ext λ { here �
 Tassocᵣₛᵣ : ∀{Δ₄} (ρ₁ : Δ₁ T⇛ᵣ Δ₂) (σ₂ : Δ₂ T⇛ₛ Δ₃) (ρ₃ : Δ₃ T⇛ᵣ Δ₄) → (ρ₁ T≫ᵣₛ σ₂) T≫ₛᵣ ρ₃ ≡ ρ₁ T≫ᵣₛ (σ₂ T≫ₛᵣ ρ₃) 
 Tassocᵣₛᵣ _ _ _ = refl
 
-E↑ℓcoincidence : (ℓ : Level) (ρ★ : Δ₁ T⇛ᵣ Δ₂) (ρ : Γ₁ E⇛ᵣ[ ρ★ ] Γ₂) → 
-  [ _ ، Tidₛ T↑ₛ ℓ ] ([ _ ] ρ Eℓ↑ᵣ ℓ) E≫ᵣₛ Eidₛ ≡ 
-    subst (λ σ★ → (Γ₁ ،★ ℓ) E⇛ₛ[ {! (ρ★ T≫ᵣₛ Tidₛ) T↑ₛ ℓ!} ] (Γ₂ ،★ ℓ)) (T↑coincidence ρ★ ℓ) ([ ρ★ T≫ᵣₛ Tidₛ ] ([ ρ★ ، Tidₛ ] ρ E≫ᵣₛ Eidₛ) Eℓ↑ₛ ℓ)
-E↑ℓcoincidence _ _ _ = {!   !} --fun-ext (λ _ → fun-ext (λ _ → fun-ext λ { (tskip x) → {!   !} }))
+-- E↑ℓcoincidence : (ℓ : Level) (ρ★ : Δ₁ T⇛ᵣ Δ₂) (ρ : Γ₁ E⇛ᵣ[ ρ★ ] Γ₂) → 
+--   [ _ ، Tidₛ T↑ₛ ℓ ] ([ _ ] ρ Eℓ↑ᵣ ℓ) E≫ᵣₛ Eidₛ ≡ 
+--     subst (λ σ★ → (Γ₁ ،★ ℓ) E⇛ₛ[ {! (ρ★ T≫ᵣₛ Tidₛ) T↑ₛ ℓ!} ] (Γ₂ ،★ ℓ)) (T↑coincidence ρ★ ℓ) ([ ρ★ T≫ᵣₛ Tidₛ ] ([ ρ★ ، Tidₛ ] ρ E≫ᵣₛ Eidₛ) Eℓ↑ₛ ℓ)
+-- E↑ℓcoincidence _ _ _ = {!   !} --fun-ext (λ _ → fun-ext (λ _ → fun-ext λ { (tskip x) → {!   !} }))
 
 -- (T T⋯ₛ ((ρ★ T≫ᵣₛ Tidₛ) T↑ₛ ℓ)) != (T T⋯ᵣ (ρ★ T↑ᵣ ℓ))
 -- T T⋯ₛ (ρ★ T≫ᵣₛ Tidₛ) T↑ₛ ℓ

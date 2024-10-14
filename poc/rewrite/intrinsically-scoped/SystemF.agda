@@ -135,13 +135,16 @@ T [ T' ] = T ⋯ₛ (T' ∷ₛ idₛ)
 
 {-# REWRITE ≫ᵣᵣ-def ≫ᵣₛ-def ≫ₛᵣ-def ≫ₛₛ-def #-}
 
-η-id : _∷ᵣ_ {s = s} {S₁ = S₁} (here refl) wkᵣ ≡ idᵣ 
-η-id = fun-ext (λ _ → fun-ext λ { (here refl) → refl ; (there x) → refl })
+η-idᵣ : _∷ᵣ_ {s = s} {S₁ = S₁} (here refl) wkᵣ ≡ idᵣ 
+η-idᵣ = fun-ext (λ _ → fun-ext λ { (here refl) → refl ; (there x) → refl })
 
-η-law : (σ : (s ∷ S₁) ⇛ₛ S₂) → _∷ₛ_ {s = s} {S₁ = S₁} (σ _ ( (here refl))) (wkᵣ ≫ᵣₛ σ) ≡ σ
-η-law = ?
+η-idₛ : _∷ₛ_ {s = s} {S₁ = S₁} (` here refl) (wkᵣ ≫ᵣₛ idₛ) ≡ idₛ 
+η-idₛ = fun-ext (λ _ → fun-ext λ { (here refl) → refl ; (there x) → refl })
 
-{-# REWRITE η-id η-law #-}
+-- η-law : (σ : (s ∷ S₁) ⇛ₛ S₂) → _∷ₛ_ {s = s} {S₁ = S₁} (σ _ ( (here refl))) (wkᵣ ≫ᵣₛ σ) ≡ σ
+-- η-law = {!   !}
+
+{-# REWRITE η-idᵣ η-idₛ #-}
 
 ⋯idᵣ : (T : S ⊢ s) → T ⋯ᵣ idᵣ ≡ T 
 ⋯idᵣ (` x)        = refl
@@ -366,7 +369,7 @@ data _↪_ : S ⊢ expr → S ⊢ expr → Set where
 ⊢ρ-preserves ⊢ρ (⊢λ ⊢e)        = ⊢λ (⊢ρ-preserves (⊢↑ᵣ ⊢ρ _) ⊢e)
 ⊢ρ-preserves ⊢ρ (⊢Λ ⊢e)        = ⊢Λ ((⊢ρ-preserves (⊢↑ᵣ ⊢ρ _) ⊢e))
 ⊢ρ-preserves ⊢ρ (⊢· ⊢e₁ ⊢e₂)   = ⊢· (⊢ρ-preserves ⊢ρ ⊢e₁) (⊢ρ-preserves ⊢ρ ⊢e₂)
-⊢ρ-preserves ⊢ρ (⊢∙ ⊢e ⊢t ⊢t') = ⊢∙ (⊢ρ-preserves ⊢ρ ⊢e) (⊢ρ-preserves ⊢ρ ⊢t) ((⊢ρ-preserves (⊢↑ᵣ ⊢ρ _) ⊢t'))
+⊢ρ-preserves ⊢ρ (⊢∙ ⊢e ⊢t ⊢t') = ⊢∙ (⊢ρ-preserves ⊢ρ ⊢e) (⊢ρ-preserves ⊢ρ ⊢t) (⊢ρ-preserves (⊢↑ᵣ ⊢ρ _) ⊢t')
 ⊢ρ-preserves ⊢ρ ⊢★             = ⊢★
 
 ⊢wkₛ : ∀ (Γ : Ctx S) (t : S ⊢ s) (T : S ∶⊢ s) (T' : S ∶⊢ s') → Γ ⊢ t ∶ T → (Γ ، T') ⊢ wk t ∶ wk T 
@@ -399,4 +402,4 @@ subject-reduction (⊢· (⊢λ ⊢e₁) ⊢e₂)             (β-λ v₂)      
 subject-reduction (⊢· ⊢e₁ ⊢e₂)                  (ξ-·₁ e₁↪e)   = ⊢· (subject-reduction ⊢e₁ e₁↪e) ⊢e₂
 subject-reduction (⊢· ⊢e₁ ⊢e₂)                  (ξ-·₂ e₂↪e x) = ⊢· ⊢e₁ (subject-reduction ⊢e₂ e₂↪e)       
 subject-reduction (⊢∙ {t' = t'} (⊢Λ ⊢e) ⊢t ⊢t') β-Λ           = ⊢σ-preserves (⊢[] ⊢t) ⊢e        
-subject-reduction (⊢∙ ⊢e ⊢t ⊢t')                (ξ-∙ e↪e')    = ⊢∙ (subject-reduction ⊢e e↪e') ⊢t ⊢t'                                  
+subject-reduction (⊢∙ ⊢e ⊢t ⊢t')                (ξ-∙ e↪e')    = ⊢∙ (subject-reduction ⊢e e↪e') ⊢t ⊢t'                                   

@@ -1,9 +1,12 @@
+{-# OPTIONS --rewriting #-}
 module SystemF where
 
 open import Data.List using (List; []; _∷_)
 open import Data.Product using (_,_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; cong; cong₂; subst; module ≡-Reasoning)
 open ≡-Reasoning
+
+open import Agda.Builtin.Equality.Rewrite
 
 open import Kits
 
@@ -88,6 +91,8 @@ _⋯_ : ∀ ⦃ K : Kit _∋/⊢_ ⦄ → S₁ ⊢ s → S₁ –[ K ]→ S₂ �
 ⋯-id (t₁ ∙ t₂)       = cong₂ _∙_ (⋯-id t₁) (⋯-id t₂)
 ⋯-id (t₁ ⇒ t₂)       = cong₂ _⇒_ (⋯-id t₁) (⋯-id t₂)
 ⋯-id ★               = refl
+
+{-# REWRITE ⋯-id #-}
 
 -- Can be derived in the full framework.
 SystemF-Traversal : Traversal
